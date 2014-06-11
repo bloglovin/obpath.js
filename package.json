@@ -1,0 +1,19 @@
+{
+  "name": "obpath.js",
+  "version": "0.1.0",
+  "description": "Resolves path expressions against objects",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "obpath",
+    "jsonpath",
+    "evaluation"
+  ],
+  "author": "Hugo Wetterberg <hugo@wetterberg.nu>",
+  "license": "MIT"
+}
