@@ -5,6 +5,14 @@ var ob = {
 	context: require('./context')
 };
 
+var types = ob.context.types;
+
+var kinds = {
+	NONE:   0,
+	ARRAY:  1,
+	OBJECT: 1 << 1
+};
+
 // Evaluate finds everything matching an expression
 exports.evaluate = function evaluate(path, object) {
 	var result = [];
@@ -15,133 +23,111 @@ exports.evaluate = function evaluate(path, object) {
 function checkAndEvaluateNextStep(path, index, object, result) {
 	var step = path.steps[index];
 
-	if (step.condition != nil) {
+	if (step.condition) {
 		var args = [];
 		for (var idx in step.condition.arguments) {
 			var arg = step.condition.arguments[idx];
 
-			if (arg.type & ob.context.PATH_ARG == PathArg) {
-				path := arg.Value.(*Path)
-				result := make(chan interface{})
-				go path.Evaluate(object, result)
-
-				values := []interface{}{}
-				for item := range result {
-					values = append(values, item)
-				}
-				args[idx] = ExpressionArgument{
-					Type:  PathArg,
-					Value: values,
-				}
+			if (arg.type & types.PATH == types.PATH) {
+				var matches = arg.value.evaluate(object);
+				args[idx] = new ob.context.ExpressionArgument(types.PATH, matches);
 			} else {
-				args[idx] = arg
+				args[idx] = arg;
 			}
 		}
 
-		match := step.condition.Condition.TestFunction(args)
-		if step.condition.Inverse {
-			match = !match
+		var match = step.condition.condition.testFunction(args);
+		if (step.condition.inverse) {
+			match = !match;
 		}
-		if match {
-			path.evaluateStep(index+1, object, result)
+		if (match) {
+			path.evaluateStep(index+1, object, result);
 		}
 	} else {
-		path.evaluateStep(index+1, object, result)
+		path.evaluateStep(index+1, object, result);
 	}
 }
 
+function objectKind(object) {
+	if (Array.isArray(object)) {
+		return kinds.ARRAY;
+	}
+	if (typeof object === 'object') {
+		return kinds.OBJECT;
+	}
+	return kinds.NONE;
+}
+
 function evaluateStep(path, index, object, result) {
-	if index >= len(path.steps) {
-		result <- object
-		return
+	if (index >= path.steps.length) {
+		result.push(object);
+		return;
 	}
 
-	zero := reflect.ValueOf(nil)
-	step := path.steps[index]
-	kind := reflect.TypeOf(object).Kind()
-	v := reflect.ValueOf(object)
+	var step = path.steps[index];
+	var kind = objectKind(object);
 
-	if step.target == "child" || step.target == "descendant" {
-		// We're looking for map item or struct fields
+	if (step.target == "child" || step.target == "descendant") {
+		// We're looking for object attributes
 
-		if step.name == "*" {
+		if (step.name == "*") {
 			// Iterate over all child fields, keys or items.
-			if kind == reflect.Map {
-				for _, key := range v.MapKeys() {
-					child := v.MapIndex(key)
-					path.checkAndEvaluateNextStep(index, child.Interface(), result)
-				}
-			} else if kind == reflect.Struct {
-				length := v.NumField()
-				for i := 0; i < length; i++ {
-					path.checkAndEvaluateNextStep(index, v.Field(i).Interface(), result)
-				}
-			} else if kind == reflect.Array || kind == reflect.Slice {
-				length := v.Len()
-				for i := 0; i < length; i++ {
-					path.checkAndEvaluateNextStep(index, v.Index(i).Interface(), result)
-				}
+			if (kind === kinds.OBJECT) {
+				Object.getOwnPropertyNames(object).forEach(function stepInto(key){
+					checkAndEvaluateNextStep(path, index, object[key], result);
+				});
+			} else if (kind === kinds.ARRAY) {
+				object.forEach(function stepInto(item) {
+					checkAndEvaluateNextStep(path, index, item, result);
+				});
 			}
 		} else {
 			// Step to a named child key or field.
-			if kind == reflect.Map {
-				child := v.MapIndex(reflect.ValueOf(step.name))
-
-				if child != zero {
-					path.checkAndEvaluateNextStep(index, child.Interface(), result)
-				}
-			} else if kind == reflect.Struct {
-				child := v.FieldByName(step.name)
-				if child != zero {
-					path.checkAndEvaluateNextStep(index, child.Interface(), result)
+			if (kind === kinds.OBJECT) {
+				var child = object[step.name];
+				if (child !== undefined) {
+					checkAndEvaluateNextStep(path, index, child, result);
 				}
 			}
 		}
 
 		// If we're dealing with a descendant selector we want to step down in the
 		// data structure without moving on to the next path part.
-		if step.target == "descendant" {
-			if kind == reflect.Map {
-				for _, key := range v.MapKeys() {
-					path.evaluateStep(index, v.MapIndex(key).Interface(), result)
-				}
-			} else if kind == reflect.Struct {
-				length := v.NumField()
-				for i := 0; i < length; i++ {
-					path.evaluateStep(index, v.Field(i).Interface(), result)
-				}
-			} else if kind == reflect.Array || kind == reflect.Slice {
-				length := v.Len()
-				for i := 0; i < length; i++ {
-					path.evaluateStep(index, v.Index(i).Interface(), result)
-				}
+		if (step.target == "descendant") {
+			if (kind == kinds.OBJECT) {
+				Object.getOwnPropertyNames(object).forEach(function stepInto(key){
+					evaluateStep(path, index, object[key], result);
+				});
+			} else if (kind === kinds.ARRAY) {
+				object.forEach(function stepInto(item) {
+					evaluateStep(path, index, item, result);
+				});
 			}
 		}
-	} else if step.target == "item" {
+	} else if (step.target == "item") {
 		// We're looking for items in an array or slice
 
-		if kind == reflect.Array || kind == reflect.Slice {
-			length := v.Len()
-			startSlice := sliceBound(step.start, length)
-			endSlice := sliceBound(step.end, length)
+		if (kind == kinds.ARRAY) {
+			var startSlice = sliceBound(step.start, object.length);
+			var endSlice = sliceBound(step.end, object.length);
 
-			for i := startSlice; i <= endSlice && i < length; i++ {
-				path.checkAndEvaluateNextStep(index, v.Index(i).Interface(), result)
+			for (var i = startSlice; i <= endSlice && i < object.length; i++) {
+				checkAndEvaluateNextStep(path, index, object[i], result);
 			}
 		}
 	}
 }
 
-func sliceBound(index int, length int) int {
-	if index < 0 {
-		index = length + index
+function sliceBound(index, length) {
+	if (index < 0) {
+		index = length + index;
 	}
 
-	if index < 0 || length == 0 {
-		index = 0
-	} else if index >= length {
-		index = length - 1
+	if (index < 0 || length === 0) {
+		index = 0;
+	} else if (index >= length) {
+		index = length - 1;
 	}
 
-	return index
+	return index;
 }

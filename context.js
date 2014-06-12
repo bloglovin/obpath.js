@@ -1,33 +1,37 @@
 /* jshint node: true */
 'use strict';
 
+var types = {}
+
 // PathArg arguments references items relative to the current item represented as an array of interface{}
-exports.PATH_ARG = 1;
+types.PATH = 1;
 // FloatArg arguments are number literals with an optional fractional part represented as a 64 bit floats
-exports.FLOAT_ARG = 1 << 1;
+types.FLOAT = 1 << 1;
 // IntegerArg arguments are number literals without a fractional part represented as a 64 bit integers
-exports.INTEGER_ARG = 1 << 2;
+types.INTEGER = 1 << 2;
 // StringArg are strings literals bounded by ", ' or ` represented as strings, no escape sequences are recognised
-exports.STRING_ARG = 1 << 3;
+types.STRING = 1 << 3;
 // LiteralArg can be any of the literal arguments
-exports.LITERAL_ARG =
-	exports.STRING_ARG |
-	exports.FLOAT_ARG  |
-	exports.STRING_ARG;
+types.LITERAL =
+	types.STRING |
+	types.FLOAT  |
+	types.STRING;
+
+exports.types = types;
 
 // TypeNames returns the names of one or more type flags
 exports.typeNames = function typeNames(argType) {
 	var names = [];
-	if (argType & exports.PATH_ARG == exports.PATH_ARG) {
+	if (argType & types.PATH == types.PATH) {
 		names.push("path");
 	}
-	if (argType & exports.FLOAT_ARG == exports.FLOAT_ARG) {
+	if (argType & types.FLOAT == types.FLOAT) {
 		names.push("float");
 	}
-	if (argType & exports.INTEGER_ARG == exports.INTEGER_ARG) {
+	if (argType & types.INTEGER == types.INTEGER) {
 		names.push("integer");
 	}
-	if (argType & exports.STRING_ARG == exports.STRING_ARG) {
+	if (argType & types.STRING == types.STRING) {
 		names.push("string");
 	}
 	return names;
@@ -44,11 +48,10 @@ function Expression(data) {
 	this.arguments = data.arguments || [];
 }
 
-function ExpressionArgument() {}
-ExpressionArgument.prototype = {
-	type: 0,
-	value: null
-};
+function ExpressionArgument(type, value) {
+	this.type = type;
+	this.value = value;
+}
 
 // ConditionFunction is a function that can be used to filter matches.
 function ConditionFunction(func, args) {
@@ -192,43 +195,43 @@ function createContext() {
 	// Set up standard condition functions
 	context.conditionFunctions = {
 		"eq": new ConditionFunction(testEquals, [
-			exports.PATH_ARG,
-			exports.LITERAL_ARG
+			types.PATH,
+			types.LITERAL
 		]),
 		"contains": new ConditionFunction(testContains, [
-			exports.PATH_ARG,
-			exports.STRING_ARG
+			types.PATH,
+			types.STRING
 		]),
 		"cicontains": new ConditionFunction(testCiContains, [
-			exports.PATH_ARG,
-			exports.STRING_ARG
+			types.PATH,
+			types.STRING
 		]),
 		"gt": new ConditionFunction(testGreater, [
-			exports.PATH_ARG,
-			exports.FLOAT_ARG
+			types.PATH,
+			types.FLOAT
 		]),
 		"lt": new ConditionFunction(testLess, [
-			exports.PATH_ARG,
-			exports.FLOAT_ARG
+			types.PATH,
+			types.FLOAT
 		]),
 		"gte": new ConditionFunction(testGreaterOrEqual, [
-			exports.PATH_ARG,
-			exports.FLOAT_ARG
+			types.PATH,
+			types.FLOAT
 		]),
 		"lte": new ConditionFunction(testLessOrEqual, [
-			exports.PATH_ARG,
-			exports.FLOAT_ARG
+			types.PATH,
+			types.FLOAT
 		]),
 		"between": new ConditionFunction(testBetween, [
-			exports.PATH_ARG,
-			exports.FLOAT_ARG,
-			exports.FLOAT_ARG
+			types.PATH,
+			types.FLOAT,
+			types.FLOAT
 		]),
 		"has": new ConditionFunction(testHas, [
-			exports.PATH_ARG
+			types.PATH
 		]),
 		"empty": new ConditionFunction(testEmpty, [
-			exports.PATH_ARG
+			types.PATH
 		]),
 	};
 

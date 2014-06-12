@@ -5,9 +5,11 @@ var lib = {
 	utils: require('./utils')
 };
 
-var obp = {
+var ob = {
 	context: require('./context')
 };
+
+var types = ob.context.types;
 
 function response(error, result) {
 	return {
@@ -15,9 +17,6 @@ function response(error, result) {
 		result: result
 	};
 }
-
-var KIND_OBJECT = 0;
-var KIND_ARRAY = 1;
 
 // MustCompile returns the compiled path, and panics if
 // there are any errors.
@@ -184,7 +183,7 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 
 	var argCount = func.arguments.length;
 
-	step.condition = new obp.context.Expression({
+	step.condition = new ob.context.Expression({
 		condition: func,
 		inverse:   inverse,
 		arguments: new Array(argCount)
@@ -205,7 +204,7 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 			return c.errorf("unexpected argument %v, only expected %v arguments", argIndex+1, argCount);
 		}
 
-		var argument = new obp.context.ExpressionArgument();
+		var argument = new ob.context.ExpressionArgument();
 		var numberStat;
 
 		// A path reference
@@ -218,7 +217,7 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 			}
 
 			argument.type = refResult.result;
-			argument.value = obp.context.PATH_ARG;
+			argument.value = types.PATH;
 			c.index = refCompiler.index;
 		} else if (c.peek('"') || c.peek('\'')) { // A string literal
 
@@ -228,14 +227,14 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 				return c.errorf("failed to parse string literal: %v", stringResult.error.message);
 			}
 
-			argument.type = obp.context.STRING_ARG;
+			argument.type = types.STRING;
 			argument.value = stringResult.result;
 		} else if ((numberStat = c.skipNumber()) && numberStat.isNumber) { // An integer or float
-			if (!numberStat.isFloat && func.arguments[argIndex]&obp.context.INTEGER_ARG > 0) {
-				argument.type = obp.context.INTEGER_ARG;
+			if (!numberStat.isFloat && func.arguments[argIndex]&types.INTEGER > 0) {
+				argument.type = types.INTEGER;
 				argument.value = parseInt(c.path.substr(mark, c.index), 10);
 			} else {
-				argument.type = obp.context.FLOAT_ARG;
+				argument.type = types.FLOAT;
 				argument.value = parseFloat(c.path.substr(mark, c.index));
 			}
 		}
@@ -243,8 +242,8 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 		if (argument.type !== 0) {
 			if (argument.type&func.arguments[argIndex] === 0) {
 				return c.errorf("unexpected argument type %v, expected one of: %v",
-					obp.context.typeNames(argument.type)[0],
-					obp.context.typeNames(func.arguments[argIndex]).join(", "));
+					ob.context.typeNames(argument.type)[0],
+					ob.context.typeNames(func.arguments[argIndex]).join(", "));
 			}
 		}
 
