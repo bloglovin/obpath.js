@@ -10,7 +10,10 @@ exports.INTEGER_ARG = 1 << 2;
 // StringArg are strings literals bounded by ", ' or ` represented as strings, no escape sequences are recognised
 exports.STRING_ARG = 1 << 3;
 // LiteralArg can be any of the literal arguments
-exports.LITERAL_ARG = STRING_ARG | FLOAT_ARG | STRING_ARG;
+exports.LITERAL_ARG =
+	exports.STRING_ARG |
+	exports.FLOAT_ARG  |
+	exports.STRING_ARG;
 
 // TypeNames returns the names of one or more type flags
 exports.typeNames = function typeNames(argType) {
@@ -32,6 +35,8 @@ exports.typeNames = function typeNames(argType) {
 
 exports.Expression = Expression;
 exports.ExpressionArgument = ExpressionArgument;
+exports.Context = Context;
+exports.createContext = createContext;
 
 function Expression(data) {
 	this.condition = data.condition;
@@ -46,15 +51,15 @@ ExpressionArgument.prototype = {
 };
 
 // ConditionFunction is a function that can be used to filter matches.
-function ConditionFunction(data) {
-	this.testFunction = data.testFunction;
-	this.arguments = data.arguments || [];
+function ConditionFunction(func, args) {
+	this.testFunction = func;
+	this.arguments = args || [];
 }
 
 // Context is context in which paths are evaluated against structures
 function Context(conditionFunctions, options) {
 	options = options || {};
-	this.conditionFunctions = conditionFunctions;
+	this.conditionFunctions = conditionFunctions || {};
 	this.allowDescendants = options.allowDescendants || false;
 }
 
@@ -123,173 +128,109 @@ function testEmpty(args) {
 	return allEmpty;
 }
 
-func testGreater(arguments []ExpressionArgument) bool {
-	matches := arguments[0].Value.([]interface{})
+function testGreater(args) {
+	var matches = args[0].value;
 
-	_, f1 := FloatCast(arguments[1].Value)
-
-	for _, match := range matches {
-		error, f0 := FloatCast(match)
-		if error != nil {
-			continue
-		}
-
-		if f0 > f1 {
-			return true
+	for (var idx in matches) {
+		if (parseFloat(matches[idx]) > args[1].value) {
+			return true;
 		}
 	}
-	return false
+	return false;
 }
 
-func testLess(arguments []ExpressionArgument) bool {
-	matches := arguments[0].Value.([]interface{})
+function testLess(args) {
+	var matches = args[0].value;
 
-	_, f1 := FloatCast(arguments[1].Value)
-
-	for _, match := range matches {
-		error, f0 := FloatCast(match)
-		if error != nil {
-			continue
-		}
-
-		if f0 < f1 {
-			return true
+	for (var idx in matches) {
+		if (parseFloat(matches[idx]) < args[1].value) {
+			return true;
 		}
 	}
-	return false
+	return false;
 }
 
-func testGreaterOrEqual(arguments []ExpressionArgument) bool {
-	matches := arguments[0].Value.([]interface{})
+function testGreaterOrEqual(args) {
+	var matches = args[0].value;
 
-	_, f1 := FloatCast(arguments[1].Value)
-
-	for _, match := range matches {
-		error, f0 := FloatCast(match)
-		if error != nil {
-			continue
-		}
-
-		if f0 >= f1 {
-			return true
+	for (var idx in matches) {
+		if (parseFloat(matches[idx]) >= args[1].value) {
+			return true;
 		}
 	}
-	return false
+	return false;
 }
 
-func testLessOrEqual(arguments []ExpressionArgument) bool {
-	matches := arguments[0].Value.([]interface{})
+function testLessOrEqual(args) {
+	var matches = args[0].value;
 
-	_, f1 := FloatCast(arguments[1].Value)
-
-	for _, match := range matches {
-		error, f0 := FloatCast(match)
-		if error != nil {
-			continue
-		}
-
-		if f0 <= f1 {
-			return true
+	for (var idx in matches) {
+		if (parseFloat(matches[idx]) >= args[1].value) {
+			return true;
 		}
 	}
-	return false
+	return false;
 }
 
-func testBetween(arguments []ExpressionArgument) bool {
-	matches := arguments[0].Value.([]interface{})
+function testBetween(args) {
+	var matches = args[0].value;
 
-	_, f1 := FloatCast(arguments[1].Value)
-	_, f2 := FloatCast(arguments[2].Value)
-
-	for _, match := range matches {
-		error, f0 := FloatCast(match)
-		if error != nil {
-			continue
-		}
-
-		if f0 > f1 && f0 < f2 {
-			return true
+	for (var idx in matches) {
+		var f0 = parseFloat(matches[idx]);
+		if (f0 > args[1].value && f0 < args[2].value) {
+			return true;
 		}
 	}
-	return false
+	return false;
 }
 
-// NewContext creates a new evaluation context
-func NewContext() *Context {
-	context := Context{}
+// createContext creates a new evaluation context with the default condition
+// functions.
+function createContext() {
+	var context = new Context();
 
 	// Set up standard condition functions
-	context.ConditionFunctions = map[string]*ConditionFunction{
-		"eq": &ConditionFunction{
-			TestFunction: testEquals,
-			Arguments: []int{
-				PathArg,
-				LiteralArg,
-			},
-		},
-		"contains": &ConditionFunction{
-			TestFunction: testContains,
-			Arguments: []int{
-				PathArg,
-				StringArg,
-			},
-		},
-		"cicontains": &ConditionFunction{
-			TestFunction: testCiContains,
-			Arguments: []int{
-				PathArg,
-				StringArg,
-			},
-		},
-		"gt": &ConditionFunction{
-			TestFunction: testGreater,
-			Arguments: []int{
-				PathArg,
-				FloatArg,
-			},
-		},
-		"lt": &ConditionFunction{
-			TestFunction: testLess,
-			Arguments: []int{
-				PathArg,
-				FloatArg,
-			},
-		},
-		"gte": &ConditionFunction{
-			TestFunction: testGreaterOrEqual,
-			Arguments: []int{
-				PathArg,
-				FloatArg,
-			},
-		},
-		"lte": &ConditionFunction{
-			TestFunction: testLessOrEqual,
-			Arguments: []int{
-				PathArg,
-				FloatArg,
-			},
-		},
-		"between": &ConditionFunction{
-			TestFunction: testBetween,
-			Arguments: []int{
-				PathArg,
-				FloatArg,
-				FloatArg,
-			},
-		},
-		"has": &ConditionFunction{
-			TestFunction: testHas,
-			Arguments: []int{
-				PathArg,
-			},
-		},
-		"empty": &ConditionFunction{
-			TestFunction: testEmpty,
-			Arguments: []int{
-				PathArg,
-			},
-		},
-	}
+	context.conditionFunctions = {
+		"eq": new ConditionFunction(testEquals, [
+			exports.PATH_ARG,
+			exports.LITERAL_ARG
+		]),
+		"contains": new ConditionFunction(testContains, [
+			exports.PATH_ARG,
+			exports.STRING_ARG
+		]),
+		"cicontains": new ConditionFunction(testCiContains, [
+			exports.PATH_ARG,
+			exports.STRING_ARG
+		]),
+		"gt": new ConditionFunction(testGreater, [
+			exports.PATH_ARG,
+			exports.FLOAT_ARG
+		]),
+		"lt": new ConditionFunction(testLess, [
+			exports.PATH_ARG,
+			exports.FLOAT_ARG
+		]),
+		"gte": new ConditionFunction(testGreaterOrEqual, [
+			exports.PATH_ARG,
+			exports.FLOAT_ARG
+		]),
+		"lte": new ConditionFunction(testLessOrEqual, [
+			exports.PATH_ARG,
+			exports.FLOAT_ARG
+		]),
+		"between": new ConditionFunction(testBetween, [
+			exports.PATH_ARG,
+			exports.FLOAT_ARG,
+			exports.FLOAT_ARG
+		]),
+		"has": new ConditionFunction(testHas, [
+			exports.PATH_ARG
+		]),
+		"empty": new ConditionFunction(testEmpty, [
+			exports.PATH_ARG
+		]),
+	};
 
-	return &context
+	return context;
 }
