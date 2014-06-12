@@ -2,10 +2,13 @@ Obpath cli tool.
 
 Usage:
   obp --help
-  obp <path-expression> [--stream] [--file=<path>]
+  obp test [<path-to-obp>] [--data=<data-path>] [--tests=<expect-path>]
+  obp <path-expression> [--stream | --indent] [--file=<path>]
 
 Options:
-  -h --help         Show this screen
-  -s --stream       Emit the results as a newline delimited JSON stream
-  -f --file         Read input data from a file instead of stdin
-  -i --indent       Pretty-print the output
+  -h --help                 Show this screen
+  -s --stream               Emit the results as a newline delimited JSON stream
+  -f --file=<path>           Read input data from a file instead of stdin
+  -i --indent               Pretty-print the output
+  -d --data=<data-path>     The data file to evaluate expression against when running tests
+  -t --tests=<expect-path>  The file with the path expressions to evaluate and expected results

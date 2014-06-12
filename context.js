@@ -97,10 +97,11 @@ function testContains(args)  {
 
 function testCiContains(args)  {
 	var matches = args[0].value;
-	var substring = args[1].value.ToLowerCase();
+	var substring = args[1].value.toLowerCase();
+
 
 	for (var idx in matches) {
-		var matchString = matches[idx].toString().ToLowerCase();
+		var matchString = matches[idx].toString().toLowerCase();
 		if (matchString.indexOf(substring) !== -1) {
 			return true;
 		}
@@ -169,7 +170,7 @@ function testLessOrEqual(args) {
 	var matches = args[0].value;
 
 	for (var idx in matches) {
-		if (parseFloat(matches[idx]) >= args[1].value) {
+		if (parseFloat(matches[idx]) <= args[1].value) {
 			return true;
 		}
 	}
