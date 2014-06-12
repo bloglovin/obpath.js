@@ -2,7 +2,7 @@ Obpath cli tool.
 
 Usage:
   obp --help
-  obp test [<path-to-obp>] [--data=<data-path>] [--tests=<expect-path>]
+  obp test [<path-to-obp>] [--data=<data-path>] [--tests=<expect-path>] [--errors=<error-path>]
   obp <path-expression> [--stream | --indent] [--file=<path>]
 
 Options:
@@ -12,3 +12,4 @@ Options:
   -i --indent               Pretty-print the output
   -d --data=<data-path>     The data file to evaluate expression against when running tests
   -t --tests=<expect-path>  The file with the path expressions to evaluate and expected results
+  -t --errors=<error-path>  The file with faulty path expressions that should generate syntax errors
