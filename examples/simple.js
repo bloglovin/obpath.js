@@ -1,25 +1,23 @@
-package main
+/* jshint node: true */
+'use strict';
 
-import (
-	"github.com/bloglovin/obpath"
-	"log"
-)
+var obpath = require('../index');
 
-func main() {
-	context := obpath.NewContext()
+main();
 
-	// Get all trees up until the second last one
-	trees := obpath.MustCompile(".trees[:-2]", context)
+function main() {
+  var context = obpath.createContext();
 
-	data := map[string]interface{}{
-		"trees":   []string{"Elm", "Oak", "Fir"},
-		"animals": []string{"Cat", "Dog", "Horse"},
-	}
+  // Get all trees up until the second last one
+  var trees = obpath.mustCompile(".trees[:-2]", context);
 
-	result := make(chan interface{})
-	go trees.Evaluate(data, result)
+  var data = {
+    "trees":   ["Elm", "Oak", "Fir"],
+    "animals": ["Cat", "Dog", "Horse"]
+  };
 
-	for match := range result {
-		log.Printf("Match: %#v", match)
-	}
+  var result = trees.evaluate(data);
+	result.forEach(function printMatch(match) {
+    console.log("Match: ", JSON.stringify(match));
+  });
 }
