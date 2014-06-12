@@ -22,8 +22,10 @@ if (opt.test) {
 		lib.path.resolve(__dirname, '../testdata/data.json');
 	var expectPath = opt['--tests'] ||
 		lib.path.resolve(__dirname, '../testdata/expect.jsonstream');
+	var errorPath = opt['--errors'] ||
+		lib.path.resolve(__dirname, '../testdata/syntax_errors.json');
 
-	runTests(obpPath, dataPath, expectPath);
+	runTests(obpPath, dataPath, expectPath, errorPath);
 }
 else {
 	var context = obpath.createContext();
@@ -33,7 +35,7 @@ else {
 	try {
 		path = obpath.mustCompile(opt['<path-expression>'], context);
 	} catch (error) {
-		console.log('Error:', error.message);
+		console.error(error.message);
 		process.exit(1);
 	}
 

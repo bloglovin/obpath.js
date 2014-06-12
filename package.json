@@ -18,6 +18,6 @@
   "license": "MIT",
   "dependencies": {
     "docopt": "~0.4.0",
-    "linerstream": "~0.1.3"
+    "contra": "~1.6.3"
   }
 }

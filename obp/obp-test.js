@@ -5,16 +5,23 @@ var lib = {
   assert: require('assert'),
   fs: require('fs'),
   child_process: require('child_process'),
-  Linerstream: require('linerstream')
+  contra: require('contra')
 };
 
-module.exports = function runTests(obpPath, dataPath, expectPath) {
-  var stream = new lib.Linerstream({
-    highWaterMark: 1
+module.exports = function runTests(obpPath, dataPath, expectPath, errorPath) {
+  runResultTests(obpPath, dataPath, expectPath, function done() {
+    runErrorTests(obpPath, errorPath, function(){});
   });
-  lib.fs.createReadStream(expectPath).pipe(stream);
+};
 
-  stream.on('data', function lineWasRead(line) {
+function runResultTests(obpPath, dataPath, expectPath, callback) {
+  var lines = lib.fs.readFileSync(expectPath, {encoding:'utf8'}).split('\n');
+
+  lib.contra.each(lines, 5, processLine, callback);
+
+  function processLine(line, done) {
+    if (!line.length) return done();
+
     var test = JSON.parse(line);
     var output = '';
 
@@ -42,11 +49,41 @@ module.exports = function runTests(obpPath, dataPath, expectPath) {
         catch (error) {
           console.error(error.message);
           console.error(results);
-          return;
+          return done();
         }
 
         console.log(JSON.stringify(test.Name), 'passed');
+        done();
       }
     });
-  });
-};
+  }
+}
+
+function runErrorTests(obpPath, errorPath, callback) {
+  var errors = JSON.parse(lib.fs.readFileSync(errorPath, {encoding:'utf8'}));
+
+  lib.contra.each(errors, 5, processError, callback);
+
+  function processError(path, done) {
+    var output = '';
+    var child = lib.child_process.spawn(obpPath, [path], {
+      stdio: ['pipe', 'ignore', 'pipe']
+    });
+
+    child.stderr.on('data', function chunkRead(chunk) {
+      output += chunk;
+    });
+
+    child.on('close', function childExited(code) {
+      if (code !== 1) {
+        console.log(JSON.stringify(path), 'failed');
+      }
+      else {
+        console.log(JSON.stringify(path), 'passed: ' + output.trim());
+        done();
+      }
+    });
+
+    child.stdin.write('{}');
+  }
+}
