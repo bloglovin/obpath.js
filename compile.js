@@ -217,8 +217,8 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 				return refResult.error;
 			}
 
-			argument.type = refResult.result;
-			argument.value = types.PATH;
+			argument.type = types.PATH;
+			argument.value = refResult.result;
 			c.index = refCompiler.index;
 		} else if (c.peek('"') || c.peek('\'')) { // A string literal
 
