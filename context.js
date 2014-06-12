@@ -1,7 +1,7 @@
 /* jshint node: true */
 'use strict';
 
-var types = {}
+var types = {};
 
 // PathArg arguments references items relative to the current item represented as an array of interface{}
 types.PATH = 1;
@@ -22,16 +22,16 @@ exports.types = types;
 // TypeNames returns the names of one or more type flags
 exports.typeNames = function typeNames(argType) {
 	var names = [];
-	if (argType & types.PATH == types.PATH) {
+	if ((argType & types.PATH) == types.PATH) {
 		names.push("path");
 	}
-	if (argType & types.FLOAT == types.FLOAT) {
+	if ((argType & types.FLOAT) == types.FLOAT) {
 		names.push("float");
 	}
-	if (argType & types.INTEGER == types.INTEGER) {
+	if ((argType & types.INTEGER) == types.INTEGER) {
 		names.push("integer");
 	}
-	if (argType & types.STRING == types.STRING) {
+	if ((argType & types.STRING) == types.STRING) {
 		names.push("string");
 	}
 	return names;

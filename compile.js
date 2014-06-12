@@ -241,13 +241,12 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 		}
 
 		if (argument.type !== 0) {
-			if (argument.type&func.arguments[argIndex] === 0) {
+			if ((argument.type & func.arguments[argIndex]) === 0) {
 				return c.errorf("unexpected argument type %v, expected one of: %v",
 					ob.context.typeNames(argument.type)[0],
 					ob.context.typeNames(func.arguments[argIndex]).join(", "));
 			}
 		}
-
 		step.condition.arguments[argIndex] = argument;
 
 		// If the next character isn't a comma we don't have any more arguments

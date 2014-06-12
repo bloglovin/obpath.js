@@ -14,7 +14,14 @@ var doc = lib.fs.readFileSync(__dirname + '/obp.usage.txt', {encoding:'utf8'});
 var opt = lib.docopt.docopt(doc, {version: pkg.version});
 
 var context = obpath.createContext();
-var path = obpath.mustCompile(opt['<path-expression>'], context);
+var path;
+
+try {
+	path = obpath.mustCompile(opt['<path-expression>'], context);
+} catch (error) {
+	console.log('Error:', error.message);
+	return;
+}
 
 if (opt['--file']) {
 
