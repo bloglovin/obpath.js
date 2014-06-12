@@ -15,5 +15,8 @@
     "evaluation"
   ],
   "author": "Hugo Wetterberg <hugo@wetterberg.nu>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "docopt": "~0.4.0"
+  }
 }

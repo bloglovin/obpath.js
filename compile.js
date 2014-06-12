@@ -21,6 +21,7 @@ function response(error, result) {
 // MustCompile returns the compiled path, and panics if
 // there are any errors.
 exports.mustCompile = mustCompile;
+exports.Path = Path;
 
 // Compile calls `callback` the compiled path.
 exports.compile = function callbackStyleCompile(path, context, callback) {
@@ -95,7 +96,7 @@ Compiler.prototype.parsePath = function parsePath(context) {
 			if (!c.skipName()) {
 				return response(c.errorf("missing name"));
 			}
-			step.name = c.path.substr(mark, c.index);
+			step.name = c.path.substring(mark, c.index);
 
 			// Check if we're filtering children by expressions
 			predError = c.parseExpressions(step, context);
@@ -111,12 +112,12 @@ Compiler.prototype.parsePath = function parsePath(context) {
 				step.start = 0;
 				step.end = -1;
 			} else if (c.skipInteger()) {
-				step.start = parseInt(c.path.substr(mark, c.index), 10);
+				step.start = parseInt(c.path.substring(mark, c.index), 10);
 
 				if (c.skip(':')) {
 					mark = c.index;
 					if (c.skipInteger()) {
-						step.end = parseInt(c.path.substr(mark, c.index), 10);
+						step.end = parseInt(c.path.substring(mark, c.index), 10);
 					} else {
 						step.end = -1;
 					}
@@ -127,7 +128,7 @@ Compiler.prototype.parsePath = function parsePath(context) {
 				step.start = 0;
 				mark = c.index;
 				if (c.skipInteger()) {
-					step.end = parseInt(c.path.substr(mark, c.index), 10);
+					step.end = parseInt(c.path.substring(mark, c.index), 10);
 				}
 			}
 
@@ -147,7 +148,7 @@ Compiler.prototype.parsePath = function parsePath(context) {
 			return response(null, new Path({
 				context: context,
 				steps:   steps,
-				path:    c.path.substr(start, c.index)
+				path:    c.path.substring(start, c.index)
 			}));
 		}
 
@@ -173,7 +174,7 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 	if (!c.skipName()) {
 		return c.errorf("unexpected %v, expected expression name", c.currentChar());
 	}
-	var name = c.path.substr(mark, c.index);
+	var name = c.path.substring(mark, c.index);
 	var func = context.conditionFunctions[name];
 
 	if (!func) {
@@ -232,10 +233,10 @@ Compiler.prototype.parseExpressions = function parseExpressions(step, context) {
 		} else if ((numberStat = c.skipNumber()) && numberStat.isNumber) { // An integer or float
 			if (!numberStat.isFloat && func.arguments[argIndex]&types.INTEGER > 0) {
 				argument.type = types.INTEGER;
-				argument.value = parseInt(c.path.substr(mark, c.index), 10);
+				argument.value = parseInt(c.path.substring(mark, c.index), 10);
 			} else {
 				argument.type = types.FLOAT;
-				argument.value = parseFloat(c.path.substr(mark, c.index));
+				argument.value = parseFloat(c.path.substring(mark, c.index));
 			}
 		}
 
@@ -306,7 +307,7 @@ Compiler.prototype.parseStringLiteral = function parseStringLiteral() {
 			if (!this.skipUntil(ch)) {
 				return response(this.errorf("missing closing %q", ch));
 			}
-			return response(null, this.path.substr(mark, this.index-1));
+			return response(null, this.path.substring(mark, this.index-1));
 		}
 	}
 	return response(this.errorf("unexpected %q, expected string literal", this.path[this.index]));

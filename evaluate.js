@@ -41,10 +41,10 @@ function checkAndEvaluateNextStep(path, index, object, result) {
 			match = !match;
 		}
 		if (match) {
-			path.evaluateStep(index+1, object, result);
+			evaluateStep(path, index+1, object, result);
 		}
 	} else {
-		path.evaluateStep(index+1, object, result);
+		evaluateStep(path, index+1, object, result);
 	}
 }
 

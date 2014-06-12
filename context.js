@@ -41,6 +41,7 @@ exports.Expression = Expression;
 exports.ExpressionArgument = ExpressionArgument;
 exports.Context = Context;
 exports.createContext = createContext;
+exports.ConditionFunction = ConditionFunction;
 
 function Expression(data) {
 	this.condition = data.condition;
@@ -68,7 +69,7 @@ function Context(conditionFunctions, options) {
 
 // ConditionNames gets the names of the available conditions
 Context.prototype.conditionNames = function conditionNames() {
-	return Object.getOwnPropertyNames(this.ConditionFunctions);
+	return Object.getOwnPropertyNames(this.conditionFunctions);
 };
 
 function testEquals(args) {

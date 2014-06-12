@@ -1,0 +1,11 @@
+Obpath cli tool.
+
+Usage:
+  obp --help
+  obp <path-expression> [--stream] [--file=<path>]
+
+Options:
+  -h --help         Show this screen
+  -s --stream       Emit the results as a newline delimited JSON stream
+  -f --file         Read input data from a file instead of stdin
+  -i --indent       Pretty-print the output
