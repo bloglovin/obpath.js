@@ -2,13 +2,13 @@
 
 ObPath matches path expressions against objects, much like jsonpath does.
 
-To install run "npm install obpath".
+To install run "npm install -g obpath".
 
 This should allow you to run obpath like this to get books that cost more than 10 simoleons:
 
 ```bash
-wget "https://raw.githubusercontent.com/bloglovin/obpath/master/testdata/sample.json"
-cat sample.json | obp --path=".store.books[*](gt(@.Price, 10))"
+wget "https://raw.githubusercontent.com/bloglovin/obpath.js/master/testdata/data.json"
+cat data.json | obp ".store.books[*](gt(@.Price, 10))"
 ```
 
 Some sample queries:
@@ -36,34 +36,27 @@ Some sample queries:
 ".store.*[*](gt(@.Price, 18))"
 ```
 
-`obp` can handle a newline delimited JSON stream as input and that is also the default output format. To get all matches as an array, specify "--stream=false".
-
 ## Programmatic usage
 
-```Go
-package main
+```js
+var obpath = require('obpath');
 
-import (
-  "github.com/bloglovin/obpath"
-  "log"
-)
+main();
 
-func main() {
-  context := obpath.NewContext()
+function main() {
+  var context = obpath.createContext();
 
   // Get all trees up until the second last one
-  trees := obpath.MustCompile(".trees[:-2]", context)
+  var trees = obpath.mustCompile(".trees[:-2]", context);
 
-  data := map[string]interface{}{
-    "trees":   []string{"Elm", "Oak", "Fir"},
-    "animals": []string{"Cat", "Dog", "Horse"},
-  }
+  var data = {
+    "trees":   ["Elm", "Oak", "Fir"],
+    "animals": ["Cat", "Dog", "Horse"]
+  };
 
-  result := make(chan interface{})
-  go trees.Evaluate(data, result)
-
-  for match := range result {
-    log.Printf("Match: %#v", match)
-  }
+  var result = trees.evaluate(data);
+  result.forEach(function printMatch(match) {
+    console.log("Match: ", JSON.stringify(match));
+  });
 }
 ```
