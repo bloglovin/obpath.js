@@ -19,6 +19,11 @@
   ],
   "author": "Hugo Wetterberg <hugo@wetterberg.nu>",
   "license": "MIT",
+  "homepage": "https://github.com/bloglovin/obpath.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bloglovin/obpath.js.git"
+  },
   "dependencies": {
     "docopt": "~0.4.0",
     "contra": "~1.6.3"
