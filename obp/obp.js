@@ -71,6 +71,11 @@ function evaluate(object) {
 			console.log(JSON.stringify(item));
 		});
 	}
+	else if (opt['--raw-stream']) {
+		matches.forEach(function writeItem(item) {
+			console.log(item);
+		});
+	}
 	else {
 		var indent = opt['--indent'] ? '  ' : undefined;
 		console.log(JSON.stringify(matches, null, indent));
