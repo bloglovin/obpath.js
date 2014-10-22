@@ -20,6 +20,7 @@
         "ISBN":     "0-553-24766-2",
         "Price":    5.52
       },
+      null,
       {
         "Category": "fiction",
         "Author":   "Herman Melville",

@@ -52,7 +52,7 @@ function objectKind(object) {
 	if (Array.isArray(object)) {
 		return kinds.ARRAY;
 	}
-	if (typeof object === 'object') {
+	if (typeof object === 'object' && object !== null) {
 		return kinds.OBJECT;
 	}
 	return kinds.NONE;
