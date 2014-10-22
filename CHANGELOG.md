@@ -1,3 +1,11 @@
+### 0.2.1 (2014-10-22)
+
+
+#### Bug Fixes
+
+* **evaluate:** don’t treat null values as objects ([cc309cf5](https://github.com/bloglovin/obpath.js/commit/cc309cf5e1b81d63705fa7d68e5dfcf4d4ed5053))
+
+
 ## 0.2.0 (2014-09-24)
 
 
