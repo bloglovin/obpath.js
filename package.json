@@ -1,6 +1,6 @@
 {
   "name": "obpath.js",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "Resolves path expressions against objects",
   "main": "index.js",
   "directories": {
