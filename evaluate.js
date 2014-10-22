@@ -16,7 +16,7 @@ var kinds = {
 // Evaluate finds everything matching an expression
 exports.evaluate = function evaluate(path, object) {
 	var result = [];
-	evaluateStep(path, 0, object, result);
+	checkAndEvaluateNextStep(path, 0, object, result);
 	return result;
 };
 
